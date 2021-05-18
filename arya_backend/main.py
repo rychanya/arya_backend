@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from arya_backend.routers import auth
+from arya_backend.db import client
 
 app = FastAPI()
 
@@ -22,4 +23,4 @@ app.include_router(auth.router)
 
 @app.get("/")
 def index():
-    return os.environ.get("API")
+    return client.list_database_names()
