@@ -3,8 +3,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from arya_backend.routers import auth
 from arya_backend.db import client
+from arya_backend.routers import auth
 
 app = FastAPI()
 

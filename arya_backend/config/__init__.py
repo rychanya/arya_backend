@@ -10,8 +10,8 @@ AUTH_ACCESS_TOKEN_EXPIRE_MINUTES = int(
     os.environ.get("AUTH_ACCESS_TOKEN_EXPIRE_MINUTES")
 )
 
-MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD')
+MONGO_PASSWORD = os.environ.get("MONGO_PASSWORD")
 
-MONGO_USER = os.environ.get('MONGO_USER')
+MONGO_USER = os.environ.get("MONGO_USER")
 
-MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME')
+MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME")
