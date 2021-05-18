@@ -17,7 +17,6 @@ pytest = "^5.2"
 black = "^21.5b0"
 isort = "^5.8.0"
 nox = "^2020.12.31"
-flake8 = "^3.9.2"
 deta = "^0.7"
 
 [build-system]
