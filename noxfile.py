@@ -10,6 +10,20 @@ def serv(session: nox.Session):
 
 
 @nox.session
+def req(session: nox.Session):
+    session.run(
+        "poetry",
+        "export",
+        "-f",
+        "requirements.txt",
+        "--without-hashes",
+        "--output",
+        "requirements.txt",
+        external=True,
+    )
+
+
+@nox.session
 def deploy(session: nox.Session):
     session.run(
         "poetry",
