@@ -1,9 +1,8 @@
-from enum import unique
 from typing import Optional
 
 from pymongo.errors import DuplicateKeyError
 
-from arya_backend.auth import get_password_hash
+from arya_backend import auth
 from arya_backend.db import MONGO_DB_NAME, client
 from arya_backend.models.auth import UserInDB
 
@@ -18,7 +17,7 @@ def get(username: str) -> Optional[UserInDB]:
 
 
 def create(username: str, password: str) -> Optional[UserInDB]:
-    payload = {"username": username, "hashed_password": get_password_hash(password)}
+    payload = {"username": username, "hashed_password": auth.get_password_hash(password)}
     try:
         collection.insert_one(document=payload)
         return get(username)
