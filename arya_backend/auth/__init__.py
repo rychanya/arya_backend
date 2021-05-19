@@ -5,9 +5,9 @@ from fastapi import HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+from arya_backend import db
 from arya_backend.config import (AUTH_ACCESS_TOKEN_EXPIRE_MINUTES,
                                  AUTH_ALGORITHM, AUTH_SECRET_KEY)
-from arya_backend.db import get_user
 from arya_backend.models.auth import TokenData
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -22,7 +22,7 @@ def get_password_hash(password):
 
 
 def authenticate_user(username: str, password: str):
-    user = get_user(username)
+    user = db.user.get(username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):

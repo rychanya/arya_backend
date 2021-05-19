@@ -1,8 +1,8 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
+from arya_backend import db
 from arya_backend.auth import decode_access_token
-from arya_backend.db import get_user
 from arya_backend.models.auth import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
@@ -17,7 +17,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
     token_data = decode_access_token(token)
 
-    user = get_user(username=token_data.username)
+    user = db.user.get(username=token_data.username)
     if user is None:
         raise credentials_exception
     return user

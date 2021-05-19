@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ..auth import authenticate_user, create_access_token, get_password_hash
-from ..db import create_user
-from ..models.auth import SignInUser, Token
+from arya_backend import db
+from arya_backend.auth import authenticate_user, create_access_token
+from arya_backend.models.auth import SignInUser, Token
 
 router = APIRouter(prefix="/auth")
 
@@ -23,6 +23,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 @router.post("/signin/", response_model=Token)
 async def signin(user: SignInUser):
-    user = create_user(user.username, get_password_hash(user.password))
+    user = db.user.create(user.username, user.password)
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
