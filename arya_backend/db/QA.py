@@ -3,7 +3,6 @@ from itertools import chain
 from arya_backend.db import MONGO_DB_NAME, client
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
-collection.create_index("username", unique=True)
 
 
 def parse_highlight(doc):

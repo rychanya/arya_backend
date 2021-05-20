@@ -7,7 +7,7 @@ from arya_backend.db import MONGO_DB_NAME, client
 from arya_backend.models.auth import UserInDB
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("Users")
-# collection.create_index("username", unique=True)
+collection.create_index("username", unique=True)
 
 
 def get(username: str) -> Optional[UserInDB]:
