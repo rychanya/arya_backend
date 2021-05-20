@@ -21,7 +21,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/signin/", response_model=Token)
+@router.post("/signin", response_model=Token)
 async def signin(user: SignInUser):
     user = User.create(user.username, user.password)
     if not user:
