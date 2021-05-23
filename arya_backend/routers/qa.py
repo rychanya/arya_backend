@@ -7,4 +7,6 @@ router = APIRouter(prefix="/qa")
 
 @router.get("/search")
 def search(q: str):
-    return QA.search(q)
+    res = QA.search(q)
+    print(res)
+    return res
