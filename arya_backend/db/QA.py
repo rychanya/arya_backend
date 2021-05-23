@@ -31,6 +31,7 @@ def parse_highlight(doc):
 
 
 def search(q: str):
+    print('q', q)
     pipeline = [
         {
             "$search": {
@@ -52,6 +53,7 @@ def search(q: str):
         },
     ]
     docs = list(collection.aggregate(pipeline=pipeline))
+    print(docs)
     for doc in docs:
         doc["highlights"] = parse_highlight(doc)
 
