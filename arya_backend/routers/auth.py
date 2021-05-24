@@ -22,8 +22,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 @router.post("/signin", response_model=Token)
-async def signin(user: SignInUser):
-    user = User.create(user.username, user.password)
+async def signin(payload: SignInUser):
+    user = User.create(payload.username, payload.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

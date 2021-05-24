@@ -31,8 +31,8 @@ def parse_highlight(doc):
 
 
 def search(q: str):
-    print('q', q)
     pipeline = [
+        {"$match": {"correct": {"$exist": True}}},
         {
             "$search": {
                 "wildcard": {
@@ -47,13 +47,13 @@ def search(q: str):
             "$project": {
                 "_id": 0,
                 "question": 1,
-                "score": {"$meta": "searchScore"},
+                "answers": 1,
+                "correct": 1,
                 "highlights": {"$meta": "searchHighlights"},
             }
         },
     ]
     docs = list(collection.aggregate(pipeline=pipeline))
-    print(docs)
     for doc in docs:
         doc["highlights"] = parse_highlight(doc)
 

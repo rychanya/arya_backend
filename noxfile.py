@@ -35,10 +35,10 @@ def deploy(session: nox.Session):
         "requirements.txt",
         external=True,
     )
-    session.run("git", "push", "heroku", "master")
+    session.run("git", "push", "heroku", "master", external=True)
 
 
 @nox.session(py=False)
 def prety(session: nox.Session):
-    session.run("black", ".", external=True)
     session.run("isort", ".", external=True)
+    session.run("black", ".", external=True)

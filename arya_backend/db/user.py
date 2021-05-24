@@ -17,7 +17,7 @@ def get(username: str) -> Optional[UserInDB]:
 
 
 def create(username: str, password: str) -> Optional[UserInDB]:
-    payload = {
+    payload: dict[str, str] = {
         "username": username,
         "hashed_password": auth.get_password_hash(password),
     }

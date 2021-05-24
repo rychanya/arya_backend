@@ -1,9 +1,6 @@
-import os
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from arya_backend.db import client
 from arya_backend.routers import auth, qa
 
 app = FastAPI()
@@ -20,8 +17,3 @@ app.add_middleware(
 )
 app.include_router(auth.router)
 app.include_router(qa.router)
-
-
-@app.get("/")
-def index():
-    return client.list_database_names()
