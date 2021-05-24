@@ -32,7 +32,6 @@ def parse_highlight(doc):
 
 def search(q: str):
     pipeline = [
-        {"$match": {"correct": {"$exists": True}}},
         {
             "$search": {
                 "wildcard": {
@@ -42,6 +41,7 @@ def search(q: str):
                 "highlight": {"path": "question"},
             }
         },
+        {"$match": {"correct": {"$exists": True}}},
         {"$limit": 10},
         {
             "$project": {
