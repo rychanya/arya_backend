@@ -38,16 +38,16 @@ def parse_highlight(doc):
 
 def search(q: str):
     pipeline = [
-        {
-            "$search": {
-                "regex": {
-                    "path": "question",
-                    "query": f".*{q}.*",
-                },
-                "highlight": {"path": "question"},
-            }
-        },
-        {"$match": {"correct": {"$exists": True}}},
+        # {
+        #     "$search": {
+        #         "regex": {
+        #             "path": "question",
+        #             "query": f".*{q}.*",
+        #         },
+        #         "highlight": {"path": "question"},
+        #     }
+        # },
+        {"$match": {"correct": {"$exists": True}, "question": {"$regex": f".*{q}.*"}}},
         {"$limit": 10},
         {
             "$set": {
