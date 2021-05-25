@@ -56,10 +56,12 @@ def search(q: str):
         },
     ]
     docs = list(collection.aggregate(pipeline=pipeline))
-    for doc in docs:
-        doc["highlights"] = parse_highlight(doc)
+    # for doc in docs:
+    #     doc["highlights"] = parse_highlight(doc)
 
-    return parse_obj_as(list[QA_with_highlights], docs)
+    # return parse_obj_as(list[QA_with_highlights], docs)
+    return parse_obj_as(list[QA], docs)
+
 
 
 def get(id: str) -> Optional[QA]:
