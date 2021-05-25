@@ -28,6 +28,7 @@ def parse_highlight(doc, q: str):
 
 
 def search(q: str):
+    print(q)
     pipeline = [
         {"$match": {"correct": {"$exists": True}, "question": {"$regex": f".*{q}.*"}}},
         {"$limit": 10},
@@ -40,7 +41,7 @@ def search(q: str):
     docs = list(collection.aggregate(pipeline=pipeline))
     for doc in docs:
         doc["highlights"] = parse_highlight(doc, q)
-
+    print(docs)
     return parse_obj_as(list[QA_with_highlights], docs)
 
 
