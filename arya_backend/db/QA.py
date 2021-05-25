@@ -40,9 +40,9 @@ def search(q: str):
     pipeline = [
         {
             "$search": {
-                "wildcard": {
+                "regex": {
                     "path": "question",
-                    "query": f"*{q}*",
+                    "query": f".*{q}.*",
                 },
                 "highlight": {"path": "question"},
             }
