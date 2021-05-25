@@ -11,6 +11,7 @@ router = APIRouter(prefix="/qa")
 def search(q: str) -> Optional[list]:
     return QA.search(q)
 
+
 @router.get("/{id}")
 def get(id: str):
     doc = QA.get(id)
