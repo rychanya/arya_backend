@@ -11,42 +11,24 @@ from arya_backend.models.qa import QA, QA_with_highlights
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
 
 
-def parse_highlight(doc):
-    def parse_one(highlight):
-        texts = highlight["texts"]
-        union = "".join([text["value"] for text in texts])
-        path = highlight["path"]
-        return (texts, union, path)
+def parse_highlight(doc, q: str):
+    def to_highlight(text: str):
+        if not text:
+            return []
+        return [{"value": text, "type": "text"}]
 
-    def recombine(origin: str, part, highlight):
-        def tohighlight(value):
-            if value:
-                return [{"value": value, "type": "text"}]
-            else:
-                return []
-
-        if origin == part:
-            return highlight
-        prefix, _, sufix = origin.partition(part)
-        return list(chain(tohighlight(prefix), highlight, tohighlight(sufix)))
-
+    prefix, _, sufix = doc["question"].partition(q)
     return {
-        path: recombine(doc[path], union, texts)
-        for texts, union, path in map(parse_one, doc["highlights"])
+        "question": list(
+            chain(
+                to_highlight(prefix), [{"value": q, "type": "hit"}], to_highlight(sufix)
+            )
+        )
     }
 
 
 def search(q: str):
     pipeline = [
-        # {
-        #     "$search": {
-        #         "regex": {
-        #             "path": "question",
-        #             "query": f".*{q}.*",
-        #         },
-        #         "highlight": {"path": "question"},
-        #     }
-        # },
         {"$match": {"correct": {"$exists": True}, "question": {"$regex": f".*{q}.*"}}},
         {"$limit": 10},
         {
@@ -56,12 +38,10 @@ def search(q: str):
         },
     ]
     docs = list(collection.aggregate(pipeline=pipeline))
-    # for doc in docs:
-    #     doc["highlights"] = parse_highlight(doc)
+    for doc in docs:
+        doc["highlights"] = parse_highlight(doc, q)
 
-    # return parse_obj_as(list[QA_with_highlights], docs)
-    return parse_obj_as(list[QA], docs)
-
+    return parse_obj_as(list[QA_with_highlights], docs)
 
 
 def get(id: str) -> Optional[QA]:
