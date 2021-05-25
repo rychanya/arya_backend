@@ -1,6 +1,9 @@
 from itertools import chain
 
+from pydantic import parse_obj_as
+
 from arya_backend.db import MONGO_DB_NAME, client
+from arya_backend.models.qa import QA_with_highlights
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
 
@@ -45,10 +48,6 @@ def search(q: str):
         {"$limit": 10},
         {
             "$project": {
-                "_id": 0,
-                "question": 1,
-                "answers": 1,
-                "correct": 1,
                 "highlights": {"$meta": "searchHighlights"},
             }
         },
@@ -57,4 +56,4 @@ def search(q: str):
     for doc in docs:
         doc["highlights"] = parse_highlight(doc)
 
-    return docs
+    return parse_obj_as(list[QA_with_highlights], docs)
