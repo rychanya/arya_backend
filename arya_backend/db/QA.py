@@ -47,13 +47,12 @@ def search(q: str):
         {"$match": {"correct": {"$exists": True}}},
         {"$limit": 10},
         {
-            "$project": {
+            "$set": {
                 "highlights": {"$meta": "searchHighlights"},
             }
         },
     ]
     docs = list(collection.aggregate(pipeline=pipeline))
-    print(docs)
     for doc in docs:
         doc["highlights"] = parse_highlight(doc)
 
