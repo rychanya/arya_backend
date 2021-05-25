@@ -53,6 +53,7 @@ def search(q: str):
         },
     ]
     docs = list(collection.aggregate(pipeline=pipeline))
+    print(docs)
     for doc in docs:
         doc["highlights"] = parse_highlight(doc)
 
