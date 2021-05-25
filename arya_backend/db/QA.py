@@ -1,9 +1,12 @@
 from itertools import chain
+from typing import Optional
 
 from pydantic import parse_obj_as
+from bson import ObjectId
+from bson.errors import InvalidId
 
 from arya_backend.db import MONGO_DB_NAME, client
-from arya_backend.models.qa import QA_with_highlights
+from arya_backend.models.qa import QA_with_highlights, QA
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
 
@@ -57,3 +60,13 @@ def search(q: str):
         doc["highlights"] = parse_highlight(doc)
 
     return parse_obj_as(list[QA_with_highlights], docs)
+
+def get(id: str) -> Optional[QA]:
+    try:
+        _id = ObjectId(id)
+    except (InvalidId, TypeError):
+        return
+    doc = collection.find_one({'_id': _id})
+    if doc:
+        return QA.parse_obj(doc)
+    
