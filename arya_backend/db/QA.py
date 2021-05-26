@@ -4,11 +4,13 @@ from typing import Optional
 from bson import ObjectId
 from bson.errors import InvalidId
 from pydantic import parse_obj_as
+from pymongo.collation import Collation
 
 from arya_backend.db import MONGO_DB_NAME, client
 from arya_backend.models.qa import QA, QA_with_highlights
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
+collection.create_index("question", collation=Collation(locale="ru", strength=2))
 
 
 def parse_highlight(doc, q: str):
@@ -28,9 +30,13 @@ def parse_highlight(doc, q: str):
 
 
 def search(q: str):
-    print(q)
     pipeline = [
-        {"$match": {"correct": {"$exists": True}, "question": {"$regex": f".*{q}.*"}}},
+        {
+            "$match": {
+                "correct": {"$exists": True},
+                "question": {"$regex": f".*{q}.*", "$options": "i"},
+            }
+        },
         {"$limit": 10},
         {
             "$set": {
@@ -41,7 +47,6 @@ def search(q: str):
     docs = list(collection.aggregate(pipeline=pipeline))
     for doc in docs:
         doc["highlights"] = parse_highlight(doc, q)
-    print(docs)
     return parse_obj_as(list[QA_with_highlights], docs)
 
 
