@@ -1,3 +1,4 @@
+import re
 from itertools import chain
 from typing import Optional
 
@@ -14,19 +15,16 @@ collection.create_index("question", collation=Collation(locale="ru", strength=2)
 
 
 def parse_highlight(doc, q: str):
-    def to_highlight(text: str):
-        if not text:
-            return []
-        return [{"value": text, "type": "text"}]
+    patern = re.compile(f"({q})", flags=re.IGNORECASE)
 
-    prefix, _, sufix = doc["question"].partition(q)
-    return {
-        "question": list(
-            chain(
-                to_highlight(prefix), [{"value": q, "type": "hit"}], to_highlight(sufix)
-            )
-        )
-    }
+    def to_highlight(text: str):
+        if patern.match(text):
+            return {"value": text, "type": "hit"}
+        else:
+            return {"value": text, "type": "text"}
+
+    split = map(to_highlight, filter(lambda val: val, patern.split(doc["question"])))
+    return {"question": list(split)}
 
 
 def search(q: str):
