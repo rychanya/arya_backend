@@ -70,10 +70,10 @@ class QA(GenericModel, Generic[AnswerType]):
     type: type_enum
     question: constr(min_length=1)  # type: ignore
     answers: conlist(constr(min_length=1), min_items=2)  # type: ignore
-    extra_answers: Optional[conlist(constr(min_length=1), min_items=2)]  # type: ignore
+    extra_answers: list[str] = []
     correct: Optional[AnswerType]
-    incorrect: Optional[List[AnswerType]]
-    tags: Optional[Dict[str, str]]
+    incorrect: List[AnswerType] = []
+    tags: Dict[str, str] = {}
 
     @classmethod
     def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
