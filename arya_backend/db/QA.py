@@ -1,5 +1,4 @@
 import re
-from itertools import chain
 from typing import Optional
 
 from bson import ObjectId
@@ -8,7 +7,7 @@ from pydantic import parse_obj_as
 from pymongo.collation import Collation
 
 from arya_backend.db import MONGO_DB_NAME, client
-from arya_backend.models.qa import QA, QA_with_highlights
+from arya_backend.models.qa import QA
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
 collection.create_index("question", collation=Collation(locale="ru", strength=2))
@@ -29,27 +28,21 @@ def parse_highlight(doc, q: str):
 
 def search(q: str, page: int = 1):
     LIMIT = 10
-    pipeline = [
-        {
-            "$match": {
-                "correct": {"$exists": True},
-                "question": {"$regex": f".*{q}.*", "$options": "i"},
-            }
-        },
-        {"$skip": (page - 1) * LIMIT},
-        {"$limit": LIMIT},
-        # {
-        #     "$set": {
-        #         "highlights": {"$meta": "searchHighlights"},
-        #     }
-        # },
-    ]
-    docs = list(collection.aggregate(pipeline=pipeline))
-    # for doc in docs:
-    #     doc["highlights"] = parse_highlight(doc, q)
-    # return parse_obj_as(list[QA_with_highlights], docs)
+    if page < 1:
+        page = 1
+    pipeline = {
+        "$match": {
+            "correct": {"$exists": True},
+            "question": {"$regex": f".*{q}.*", "$options": "i"},
+        }
+    }
+    print(collection.aggregate(pipeline=[pipeline, {"$count": "count"}]))
+    docs = list(
+        collection.aggregate(
+            pipeline=[pipeline, {"$skip": (page - 1) * LIMIT}, {"$limit": LIMIT}]
+        )
+    )
     return parse_obj_as(list[QA], docs)
-
 
 
 def get(id: str) -> Optional[QA]:
