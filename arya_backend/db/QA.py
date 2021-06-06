@@ -29,8 +29,6 @@ def parse_highlight(doc, q: str):
 
 def search(q: str, page: int = 1):
     LIMIT = 10
-    if page < 1:
-        page = 1
     pipeline = [
         {
             "$match": {

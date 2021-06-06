@@ -8,8 +8,10 @@ router = APIRouter(prefix="/qa")
 
 
 @router.get("/search")
-def search(q: str) -> Optional[list]:
-    return QA.search(q)
+def search(q: str, page: int = 1) -> Optional[list]:
+    if page < 1:
+        page = 1
+    return QA.search(q, page)
 
 
 @router.get("/{id}")
