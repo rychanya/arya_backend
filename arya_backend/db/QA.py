@@ -36,7 +36,7 @@ def search(q: str, page: int = 1):
             "question": {"$regex": f".*{q}.*", "$options": "i"},
         }
     }
-    print(collection.aggregate(pipeline=[pipeline, {"$count": "count"}]))
+    print(list(collection.aggregate(pipeline=[pipeline, {"$count": "count"}])))
     docs = list(
         collection.aggregate(
             pipeline=[pipeline, {"$skip": (page - 1) * LIMIT}, {"$limit": LIMIT}]
