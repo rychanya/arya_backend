@@ -27,7 +27,10 @@ def parse_highlight(doc, q: str):
     return {"question": list(split)}
 
 
-def search(q: str):
+def search(q: str, page: int = 1):
+    LIMIT = 10
+    if page < 1:
+        page = 1
     pipeline = [
         {
             "$match": {
@@ -35,7 +38,8 @@ def search(q: str):
                 "question": {"$regex": f".*{q}.*", "$options": "i"},
             }
         },
-        {"$limit": 10},
+        {"$skip": (page - 1) * LIMIT},
+        {"$limit": LIMIT},
         # {
         #     "$set": {
         #         "highlights": {"$meta": "searchHighlights"},
