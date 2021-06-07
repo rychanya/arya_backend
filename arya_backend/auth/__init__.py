@@ -4,6 +4,7 @@ from typing import Optional, Union
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from pydantic import ValidationError
 
 from arya_backend.config import (
     AUTH_ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -46,18 +47,14 @@ def create_access_token(
     return encoded_jwt
 
 
-def decode_access_token(token: str) -> TokenData:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+def decode_access_token(token: str, credentials_exception: HTTPException) -> TokenData:
     try:
         payload = jwt.decode(token, AUTH_SECRET_KEY, algorithms=[AUTH_ALGORITHM])
         username = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
+        token_scopes = payload.get("scopes", [])
+        token_data = TokenData(username=username, scopes=token_scopes)
+    except (JWTError, ValidationError):
         raise credentials_exception
     return token_data

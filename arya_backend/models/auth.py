@@ -10,6 +10,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str
+    scopes: list[str] = []
 
 
 class User(BaseModel):
@@ -24,3 +25,4 @@ class SignInUser(BaseModel):
 
 class UserInDB(User):
     hashed_password: str
+    scopes: list[str]

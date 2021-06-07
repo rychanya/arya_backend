@@ -1,6 +1,6 @@
+import math
 import re
 from typing import Optional
-import math
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -37,13 +37,10 @@ def search(q: str, page: int = 1):
             "question": {"$regex": f".*{q}.*", "$options": "i"},
         }
     }
-    docs_count = list(collection.aggregate(pipeline=[pipeline, {"$count": "count"}]))[0][
-        "count"
-    ]
-    paginator = {
-        "current": page,
-        "all": math.ceil(docs_count / LIMIT)
-    }
+    docs_count = list(collection.aggregate(pipeline=[pipeline, {"$count": "count"}]))[
+        0
+    ]["count"]
+    paginator = {"current": page, "all": math.ceil(docs_count / LIMIT)}
     docs = list(
         collection.aggregate(
             pipeline=[pipeline, {"$skip": (page - 1) * LIMIT}, {"$limit": LIMIT}]
