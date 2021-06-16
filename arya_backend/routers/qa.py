@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 
 from arya_backend.db import QA
 
@@ -18,3 +18,7 @@ def get(id: str):
     if doc is None:
         raise HTTPException(404)
     return doc
+
+@router.post("/upload")
+def upload(files: list[UploadFile] = File(...)):
+    return files[0].file.read()
