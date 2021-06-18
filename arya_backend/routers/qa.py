@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File
 
 from arya_backend.db import QA
+from arya_backend.parser import parse_xl
 
 router = APIRouter(prefix="/qa")
 
@@ -21,4 +22,4 @@ def get(id: str):
 
 @router.post("/upload")
 def upload(file: UploadFile = File(...)):
-    return file.file.read()
+    return parse_xl(file.file.read())
