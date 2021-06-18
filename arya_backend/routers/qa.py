@@ -20,5 +20,5 @@ def get(id: str):
     return doc
 
 @router.post("/upload")
-def upload(files: list[UploadFile] = File(...)):
-    return files[0].file.read()
+def upload(file: UploadFile = File(...)):
+    return file.file.read()
