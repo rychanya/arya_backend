@@ -38,4 +38,4 @@ def parse_xl(file):
         parse_with_title = partial(parse_row, title=title)
         qas = map(parse_with_title, ws.iter_rows(min_row=2, values_only=True))
         result = chain(result, qas)
-    return result
+    return list(result)
