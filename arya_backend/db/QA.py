@@ -64,4 +64,5 @@ def get_or_create(qa: Optional[QA])-> Optional[QA]:
     filter = qa.dict(include={'question', 'type', 'correct'})
     # collection.find_one_and_update(filter=filter, update={})
     doc = collection.find_one(filter=filter)
-    return QA.parse_obj(doc)
+    if doc is not None:
+        return QA.parse_obj(doc)
