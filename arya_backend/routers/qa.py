@@ -22,4 +22,4 @@ def get(id: str):
 
 @router.post("/upload")
 def upload(file: UploadFile = File(...)):
-    return parse_xl(file.file.read())
+    return parse_xl(file.file)
