@@ -2,6 +2,7 @@ from openpyxl import load_workbook
 from arya_backend.models.qa import QA
 from functools import partial
 from itertools import chain
+from io import BytesIO
 
 
 def parse_type(type: str) -> str:
@@ -29,7 +30,8 @@ def parse_row(row, title: str):
 
 
 def parse_xl(file):
-    wb = load_workbook(filename=file, read_only=True)
+    stream = BytesIO(file.read())
+    wb = load_workbook(filename=stream, read_only=True)
     result = []
     for ws in wb.worksheets:
         title = str(ws.title)
