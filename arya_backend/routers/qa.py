@@ -22,4 +22,5 @@ def get(id: str):
 
 @router.post("/upload")
 def upload(file: UploadFile = File(...)):
-    return parse_xl(file.file)
+    qas = parse_xl(file.file)
+    return [QA.get_or_create(qa) for qa in qas]

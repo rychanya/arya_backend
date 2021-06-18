@@ -90,22 +90,3 @@ class QA(GenericModel, Generic[AnswerType]):
     def _parse_obj(cls: Type["Model"], obj: Any) -> "Model":
         return super().parse_obj(obj)  # type: ignore
 
-
-class Highlight(BaseModel):
-    class type_enum(str, Enum):
-        hit = "hit"
-        text = "text"
-
-    class Config:
-        use_enum_values = True
-
-    value: str
-    type: type_enum
-
-
-class Highlights(BaseModel):
-    __root__: dict[str, list[Highlight]]
-
-
-class QA_with_highlights(QA):
-    highlights: Highlights
