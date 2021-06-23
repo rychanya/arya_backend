@@ -2,7 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
 
-from arya_backend.db import QA
+from bson import ObjectId
+
+from arya_backend.db import QA, upload_QA
+from arya_backend.models.upload_QA import Upload
 from arya_backend.parser import parse_xl
 
 router = APIRouter(prefix="/qa")
@@ -23,4 +26,9 @@ def get(id: str):
 @router.post("/upload")
 def upload(file: UploadFile = File(...)):
     qas = parse_xl(file.file)
-    return [QA.get_or_create(qa) for qa in qas]
+    # return [QA.get_or_create_incomplete(qa) for qa in qas]
+    upload = Upload.parse_obj({
+        'data': qas,
+        'by': ObjectId()
+    })
+    return upload_QA.upload(upload)

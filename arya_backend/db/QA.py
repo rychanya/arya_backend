@@ -1,30 +1,18 @@
 import math
-import re
 from typing import Optional
 
 from bson import ObjectId
 from bson.errors import InvalidId
 from pydantic import parse_obj_as
 from pymongo.collation import Collation
+from pymongo import ReturnDocument
 
 from arya_backend.db import MONGO_DB_NAME, client
 from arya_backend.models.qa import QA
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
+
 collection.create_index("question", collation=Collation(locale="ru", strength=2))
-
-
-def parse_highlight(doc, q: str):
-    patern = re.compile(f"({q})", flags=re.IGNORECASE)
-
-    def to_highlight(text: str):
-        if patern.match(text):
-            return {"value": text, "type": "hit"}
-        else:
-            return {"value": text, "type": "text"}
-
-    split = map(to_highlight, filter(lambda val: val, patern.split(doc["question"])))
-    return {"question": list(split)}
 
 
 def search(q: str, page: int = 1):
@@ -58,11 +46,64 @@ def get(id: str) -> Optional[QA]:
     if doc:
         return QA.parse_obj(doc)
 
-def get_or_create(qa: Optional[QA])-> Optional[QA]:
-    if qa is None:
-        return None
-    filter = qa.dict(include={'question', 'type', 'correct'})
-    # collection.find_one_and_update(filter=filter, update={})
-    doc = collection.find_one(filter=filter)
-    if doc is not None:
-        return QA.parse_obj(doc)
+
+# def get_or_create_incomplete(qa: Optional[QA]) -> Tuple[Optional[QA], Optional[bool]]:
+#     if qa is None:
+#         return (None, None)
+#     if qa.correct is not None:
+#         filter = qa.dict(include={"question", "type", "correct"})
+#         update = qa.tags.get("title")
+#         if update:
+#             update = {"$set": {"tags.title": update}}
+#             doc = collection.find_one_and_update(
+#                 filter=filter, update=update, return_document=ReturnDocument.AFTER
+#             )
+#         else:
+#             doc = collection.find_one(filter=filter)
+#         if doc:
+#             return (QA.parse_obj(doc), False)
+#         else:
+#             qa.tags.update({"incomplete": ""})
+#             payload = qa.dict(by_alias=True, exclude_none=True)
+#             _id = collection.insert_one(document=payload).inserted_id  # type: ignore
+#             return (QA.parse_obj(collection.find_one({"_id": _id})), True)
+#     else:
+#         filter = qa.dict(include={"question", "type", "incorrect"})
+#         update = qa.tags.get("title")
+#         if update:
+#             update = {"$set": {"tags.title": update}}
+#             doc = collection.find_one_and_update(
+#                 filter=filter, update=update, return_document=ReturnDocument.AFTER
+#             )
+#         else:
+#             doc = collection.find_one(filter=filter)
+#         if doc:
+#             return (QA.parse_obj(doc), False)
+#         else:
+#             qa.tags.update({"incomplete": ""})
+#             payload = qa.dict(by_alias=True, exclude_none=True)
+#             _id = collection.insert_one(document=payload).inserted_id  # type: ignore
+#             return (QA.parse_obj(collection.find_one({"_id": _id})), True)
+
+
+# def get_incomplete(qa: QA) -> Optional[QA]:
+#     filter = qa.dict(include={"type", "question"})
+#     filter.update(
+#         {
+#             "answers": {
+#                 "$all": [{"$elemMatch": {"$eq": answer}} for answer in qa.answers]
+#             }
+#         }
+#     )
+#     update = {
+#         '$set': {'tags.title': qa.tags.get('title')},
+#         '$setOnInsert': {'tags.incomplete': True}
+#     }
+#     if qa.correct:
+#         filter.update({"correct": qa.correct})
+#     elif qa.incorrect:
+#         update.update({'$addToSet': {'incorrect': qa.incorrect[0]}})
+#     else:
+#         return
+    
+#     collection.find_one_and_update(filter=filter, update=update, upsert=True, return_document=ReturnDocument.AFTER)

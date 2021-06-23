@@ -25,4 +25,4 @@ class SignInUser(BaseModel):
 
 class UserInDB(User):
     hashed_password: str
-    scopes: list[str]
+    scopes: list[str] = []

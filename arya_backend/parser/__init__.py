@@ -1,8 +1,9 @@
 from openpyxl import load_workbook
 from arya_backend.models.qa import QA
+from arya_backend.models.upload_QA import Upload, UploadQA
 from functools import partial
-from itertools import chain
 from io import BytesIO
+from typing import Union
 
 
 def parse_type(type: str) -> str:
@@ -14,19 +15,52 @@ def parse_type(type: str) -> str:
         raise TypeError
 
 
+def parse_answer(
+    answer: str, answer_type: str
+) -> Union[str, list[str], dict[str, str]]:
+    if answer_type == QA.type_enum.one:
+        return answer
+    elif answer_type == QA.type_enum.many:
+        return answer.split(";_x000D_\n")
+    else:
+        raise TypeError
+
+
+# def parse_answers(answer: Union[str, list[str], dict[str, str]]) -> list[str]:
+#     if isinstance(answer, str):
+#         return [answer]
+#     elif isinstance(answer, list):
+#         return answer
+#     else:
+#         raise TypeError
+
+
+def parse_correct(value: str) -> bool:
+    if value == "+":
+        return True
+    elif value == "-":
+        return False
+    else:
+        raise TypeError
+
+
 def parse_row(row, title: str):
-    answers = row[4].split(";_x000D_\n")
-    if row[2] == "+":
+    try:
+        answer_type = parse_type(row[6])
+        answer = parse_answer(row[4], answer_type)
+        # answers = parse_answers(answer)
+        question = row[1]
+        is_correct = parse_correct(row[2])
         payload = {
-            "question": row[1],
-            "type": parse_type(row[6]),
-            "answers": answers,
-            "tags": {"title": title},
-            "correct": answers,
+            "question": question,
+            "type": answer_type,
+            # "answers": answers,
+            "title": title,
+            "is_correct": is_correct
         }
-        if payload["type"] == QA.type_enum.one:
-            payload["correct"] = payload["correct"][0]
-        return QA.parse_obj(payload)
+    except (TypeError, KeyError):
+        return None
+    return UploadQA.parse_obj(payload)
 
 
 def parse_xl(file):
@@ -37,5 +71,5 @@ def parse_xl(file):
         title = str(ws.title)
         parse_with_title = partial(parse_row, title=title)
         qas = map(parse_with_title, ws.iter_rows(min_row=2, values_only=True))
-        result = chain(result, qas)
+        result.extend(qas)
     return list(result)

@@ -1,12 +1,31 @@
 import nox
+import os
+from dotenv import load_dotenv
 
 nox.options.sessions = ["prety"]
 
 
-@nox.session
+@nox.session(py=False)
 def serv(session: nox.Session):
+    load_dotenv()
+    # session.log(os.path.dirname(__file__))
     session.install(".")
-    session.run("uvicorn", "arya_backend.main:app", "--reload")
+    # session.log(os.environ.get("MONGO_USER"))
+    session.run(
+        "uvicorn",
+        "arya_backend.main:app",
+        "--reload",
+        env={ # type: ignore
+            "AUT_ALGORITHM": os.environ.get("AUT_ALGORITHM"),
+            "AUTH_ACCESS_TOKEN_EXPIRE_MINUTES": os.environ.get(
+                "AUTH_ACCESS_TOKEN_EXPIRE_MINUTES"
+            ),
+            "AUT_SECRET_KEY": os.environ.get("AUT_SECRET_KEY"),
+            "MONGO_DB_NAME": os.environ.get("MONGO_DB_NAME"),
+            "MONGO_PASSWORD": os.environ.get("MONGO_PASSWORD"),
+            "MONGO_USER": os.environ.get("MONGO_USER"),
+        },
+    )
 
 
 @nox.session
