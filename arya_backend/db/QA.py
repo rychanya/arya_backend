@@ -4,8 +4,8 @@ from typing import Optional
 from bson import ObjectId
 from bson.errors import InvalidId
 from pydantic import parse_obj_as
-from pymongo.collation import Collation
 from pymongo import ReturnDocument
+from pymongo.collation import Collation
 
 from arya_backend.db import MONGO_DB_NAME, client
 from arya_backend.models.qa import QA
@@ -105,5 +105,5 @@ def get(id: str) -> Optional[QA]:
 #         update.update({'$addToSet': {'incorrect': qa.incorrect[0]}})
 #     else:
 #         return
-    
+
 #     collection.find_one_and_update(filter=filter, update=update, upsert=True, return_document=ReturnDocument.AFTER)

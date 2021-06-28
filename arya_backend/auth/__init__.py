@@ -53,7 +53,8 @@ def decode_access_token(token: str, credentials_exception: HTTPException) -> Tok
         username = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_scopes = payload.get("scopes", [])
+        token_scopes = payload.get("scopes", "")
+        token_scopes = token_scopes.split(" ")
         token_data = TokenData(username=username, scopes=token_scopes)
     except (JWTError, ValidationError):
         raise credentials_exception

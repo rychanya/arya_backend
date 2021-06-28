@@ -26,7 +26,6 @@ async def get_current_user(
     )
 
     token_data = decode_access_token(token, credentials_exception)
-
     user = get_user(username=token_data.username)
     if user is None:
         raise credentials_exception

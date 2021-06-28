@@ -1,9 +1,11 @@
-from openpyxl import load_workbook
-from arya_backend.models.qa import QA
-from arya_backend.models.upload_QA import Upload, UploadQA
 from functools import partial
 from io import BytesIO
 from typing import Union
+
+from openpyxl import load_workbook
+
+from arya_backend.models.qa import QA
+from arya_backend.models.upload_QA import Upload, UploadQA
 
 
 def parse_type(type: str) -> str:
@@ -56,7 +58,7 @@ def parse_row(row, title: str):
             "type": answer_type,
             # "answers": answers,
             "title": title,
-            "is_correct": is_correct
+            "is_correct": is_correct,
         }
     except (TypeError, KeyError):
         return None

@@ -69,7 +69,7 @@ class QA(GenericModel, Generic[AnswerType]):
     id: StrObjectId = Field(None, alias="_id")
     type: type_enum
     question: constr(min_length=1)  # type: ignore
-    answers: list[constr(min_length=1)] # type: ignore
+    answers: list[constr(min_length=1)]  # type: ignore
     extra_answers: list[str] = []
     correct: Optional[AnswerType]
     incorrect: List[AnswerType] = []
@@ -89,4 +89,3 @@ class QA(GenericModel, Generic[AnswerType]):
     @classmethod
     def _parse_obj(cls: Type["Model"], obj: Any) -> "Model":
         return super().parse_obj(obj)  # type: ignore
-

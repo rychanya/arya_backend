@@ -1,5 +1,6 @@
-import nox
 import os
+
+import nox
 from dotenv import load_dotenv
 
 nox.options.sessions = ["prety"]
@@ -15,7 +16,7 @@ def serv(session: nox.Session):
         "uvicorn",
         "arya_backend.main:app",
         "--reload",
-        env={ # type: ignore
+        env={  # type: ignore
             "AUT_ALGORITHM": os.environ.get("AUT_ALGORITHM"),
             "AUTH_ACCESS_TOKEN_EXPIRE_MINUTES": os.environ.get(
                 "AUTH_ACCESS_TOKEN_EXPIRE_MINUTES"
