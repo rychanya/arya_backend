@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from arya_backend.auth import authenticate_user, create_access_token
 from arya_backend.db import user as User
-from arya_backend.dependencies import get_current_active_user
+from arya_backend.dependencies import get_current_user
 from arya_backend.models.auth import SignInUser, Token
 
 router = APIRouter(prefix="/auth")
@@ -38,5 +38,5 @@ async def signin(payload: SignInUser):
 
 
 @router.get("/me")
-async def get_curent_user(user=Depends(get_current_active_user)):
+async def get_me(user=Depends(get_current_user)):
     return user.username

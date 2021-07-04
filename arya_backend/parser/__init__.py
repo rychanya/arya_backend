@@ -1,11 +1,13 @@
-from functools import partial
 from io import BytesIO
-from typing import Union
 
+from bson.objectid import ObjectId
 from openpyxl import load_workbook
 
-from arya_backend.models.qa import QA
-from arya_backend.models.upload_QA import Upload, UploadQA
+from arya_backend.db import fs
+from arya_backend.db.QA import get_or_create_qa_incomplite, is_exists
+from arya_backend.db.upload_QA import create
+from arya_backend.models.qa import QA, QAIncomplete
+from arya_backend.models.upload_QA import Foreign, Upload
 
 
 def parse_type(type: str) -> str:
@@ -17,24 +19,13 @@ def parse_type(type: str) -> str:
         raise TypeError
 
 
-def parse_answer(
-    answer: str, answer_type: str
-) -> Union[str, list[str], dict[str, str]]:
+def parse_answer(answer: str, answer_type: str) -> list[str]:
     if answer_type == QA.type_enum.one:
-        return answer
+        return [answer]
     elif answer_type == QA.type_enum.many:
         return answer.split(";_x000D_\n")
     else:
         raise TypeError
-
-
-# def parse_answers(answer: Union[str, list[str], dict[str, str]]) -> list[str]:
-#     if isinstance(answer, str):
-#         return [answer]
-#     elif isinstance(answer, list):
-#         return answer
-#     else:
-#         raise TypeError
 
 
 def parse_correct(value: str) -> bool:
@@ -46,32 +37,53 @@ def parse_correct(value: str) -> bool:
         raise TypeError
 
 
-def parse_row(row, title: str):
+def normalize_cp1251(s: str) -> str:
     try:
-        answer_type = parse_type(row[6])
-        answer = parse_answer(row[4], answer_type)
-        # answers = parse_answers(answer)
-        question = row[1]
-        is_correct = parse_correct(row[2])
-        payload = {
-            "question": question,
-            "type": answer_type,
-            # "answers": answers,
-            "title": title,
-            "is_correct": is_correct,
-        }
-    except (TypeError, KeyError):
-        return None
-    return UploadQA.parse_obj(payload)
+        return s.encode("cp1251").decode("utf8")
+    except UnicodeDecodeError:
+        return s
 
 
-def parse_xl(file):
-    stream = BytesIO(file.read())
+def row_iter(stream: BytesIO, user: ObjectId):
     wb = load_workbook(filename=stream, read_only=True)
-    result = []
     for ws in wb.worksheets:
-        title = str(ws.title)
-        parse_with_title = partial(parse_row, title=title)
-        qas = map(parse_with_title, ws.iter_rows(min_row=2, values_only=True))
-        result.extend(qas)
-    return list(result)
+        title = normalize_cp1251(str(ws.title))
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            try:
+                type = parse_type(row[6])
+                answer = parse_answer(row[4], type)
+                question = row[1]
+                is_correct = parse_correct(row[2])
+                yield QAIncomplete.parse_obj(
+                    {
+                        "title": title,
+                        "type": type,
+                        "answer": answer,
+                        "question": question,
+                        "is_correct": is_correct,
+                        "by": [user],
+                        "create": user,
+                    }
+                )
+            except (TypeError, KeyError):
+                pass
+
+
+def parse_qa(qa: QAIncomplete) -> Foreign:
+    if qa.is_correct:
+        doc_id = is_exists(qa.type, qa.answer, qa.question)
+        if doc_id:
+            return Foreign(id=doc_id, col="QA")
+    return Foreign(id=get_or_create_qa_incomplite(qa), col="QA_INC")
+
+
+def parse(id: ObjectId):
+    file = fs.get(id)
+    user = file.metadata.get("by")
+    stream = BytesIO(file.read())
+    file.close()
+    upload = Upload.parse_obj(
+        {"by": user, "_id": id, "data": [parse_qa(qa) for qa in row_iter(stream, user)]}
+    )
+    create(upload)
+    fs.delete(id)

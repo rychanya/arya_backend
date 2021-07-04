@@ -1,6 +1,10 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from bson import ObjectId
+from bson.objectid import ObjectId
+from pydantic import BaseModel, Field
+
+from arya_backend.models.qa import StrObjectId
 
 
 class Token(BaseModel):
@@ -14,6 +18,11 @@ class TokenData(BaseModel):
 
 
 class User(BaseModel):
+    class Config:
+        allow_population_by_field_name = True
+        json_encoders = {ObjectId: lambda v: str(v)}
+
+    id: StrObjectId = Field(None, alias="_id")
     username: str
     disabled: Optional[bool] = False
 

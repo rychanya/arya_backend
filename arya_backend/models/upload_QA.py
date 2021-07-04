@@ -1,18 +1,15 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from arya_backend.models.qa import QA, StrObjectId
+from arya_backend.models.qa import StrObjectId
 
 
-class UploadQA(BaseModel):
+class Foreign(BaseModel):
     class Config:
-        use_enum_values = True
+        json_encoders = {ObjectId: lambda v: str(v)}
 
-    type: QA.type_enum
-    question: str
-    title: str
-    is_correct: bool
-    is_processed: bool = False
+    id: StrObjectId
+    col: str
 
 
 class Upload(BaseModel):
@@ -21,5 +18,5 @@ class Upload(BaseModel):
         json_encoders = {ObjectId: lambda v: str(v)}
 
     id: StrObjectId = Field(None, alias="_id")
-    data: list[UploadQA]
     by: StrObjectId
+    data: list[Foreign] = []

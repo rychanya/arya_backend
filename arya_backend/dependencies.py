@@ -24,7 +24,6 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": authenticate_value},
     )
-
     token_data = decode_access_token(token, credentials_exception)
     user = get_user(username=token_data.username)
     if user is None:
@@ -36,12 +35,6 @@ async def get_current_user(
                 detail="Not enough permissions",
                 headers={"WWW-Authenticate": authenticate_value},
             )
-    return user
-
-
-async def get_current_active_user(
-    current_user: User = Depends(get_current_user),
-) -> User:
-    if current_user.disabled:
+    if user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+    return user

@@ -1,5 +1,5 @@
 import math
-from typing import Optional
+from typing import Optional, Union
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -8,9 +8,11 @@ from pymongo import ReturnDocument
 from pymongo.collation import Collation
 
 from arya_backend.db import MONGO_DB_NAME, client
-from arya_backend.models.qa import QA
+from arya_backend.models.qa import QA, QAIncomplete
 
 collection = client.get_database(MONGO_DB_NAME).get_collection("QA")
+collection_incomplete = client.get_database(MONGO_DB_NAME).get_collection("QA_INC")
+
 
 collection.create_index("question", collation=Collation(locale="ru", strength=2))
 
@@ -47,63 +49,43 @@ def get(id: str) -> Optional[QA]:
         return QA.parse_obj(doc)
 
 
-# def get_or_create_incomplete(qa: Optional[QA]) -> Tuple[Optional[QA], Optional[bool]]:
-#     if qa is None:
-#         return (None, None)
-#     if qa.correct is not None:
-#         filter = qa.dict(include={"question", "type", "correct"})
-#         update = qa.tags.get("title")
-#         if update:
-#             update = {"$set": {"tags.title": update}}
-#             doc = collection.find_one_and_update(
-#                 filter=filter, update=update, return_document=ReturnDocument.AFTER
-#             )
-#         else:
-#             doc = collection.find_one(filter=filter)
-#         if doc:
-#             return (QA.parse_obj(doc), False)
-#         else:
-#             qa.tags.update({"incomplete": ""})
-#             payload = qa.dict(by_alias=True, exclude_none=True)
-#             _id = collection.insert_one(document=payload).inserted_id  # type: ignore
-#             return (QA.parse_obj(collection.find_one({"_id": _id})), True)
-#     else:
-#         filter = qa.dict(include={"question", "type", "incorrect"})
-#         update = qa.tags.get("title")
-#         if update:
-#             update = {"$set": {"tags.title": update}}
-#             doc = collection.find_one_and_update(
-#                 filter=filter, update=update, return_document=ReturnDocument.AFTER
-#             )
-#         else:
-#             doc = collection.find_one(filter=filter)
-#         if doc:
-#             return (QA.parse_obj(doc), False)
-#         else:
-#             qa.tags.update({"incomplete": ""})
-#             payload = qa.dict(by_alias=True, exclude_none=True)
-#             _id = collection.insert_one(document=payload).inserted_id  # type: ignore
-#             return (QA.parse_obj(collection.find_one({"_id": _id})), True)
+def is_exists(type: str, answer: list[str], question: str):
+    filter = {
+        "type": type,
+        "question": question,
+    }
+    if len(answer) == 1:
+        filter.update({"correct": answer[0]})
+    else:
+        filter.update(  # type: ignore
+            {
+                "correct": {"$all": [{"$elemMatch": {"$eq": el}} for el in answer]},
+            }
+        )
+    qa = collection.find_one(filter=filter)
+    if qa:
+        return qa["_id"]
 
 
-# def get_incomplete(qa: QA) -> Optional[QA]:
-#     filter = qa.dict(include={"type", "question"})
-#     filter.update(
-#         {
-#             "answers": {
-#                 "$all": [{"$elemMatch": {"$eq": answer}} for answer in qa.answers]
-#             }
-#         }
-#     )
-#     update = {
-#         '$set': {'tags.title': qa.tags.get('title')},
-#         '$setOnInsert': {'tags.incomplete': True}
-#     }
-#     if qa.correct:
-#         filter.update({"correct": qa.correct})
-#     elif qa.incorrect:
-#         update.update({'$addToSet': {'incorrect': qa.incorrect[0]}})
-#     else:
-#         return
-
-#     collection.find_one_and_update(filter=filter, update=update, upsert=True, return_document=ReturnDocument.AFTER)
+def get_or_create_qa_incomplite(qa: QAIncomplete):
+    filter = {
+        "question": qa.question,
+        "type": qa.type,
+        "title": qa.title,
+        "is_correct": qa.is_correct,
+        "answer": {"$all": [{"$elemMatch": {"$eq": el}} for el in qa.answer]},
+    }
+    with client.start_session() as session:
+        with session.start_transaction() as transaction:
+            ...
+    doc = collection_incomplete.find_one_and_update(
+        filter=filter,
+        update={
+            "$setOnInsert": {"answer": qa.answer, "create": qa.by[0]},
+            "$addToSet": {"by": qa.by[0]},
+        },
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
+    )
+    if doc:
+        return doc["_id"]

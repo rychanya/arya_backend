@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
 from bson import ObjectId
-from pydantic import BaseModel, Field, conlist, constr
+from pydantic import BaseModel, Field, constr
 from pydantic.generics import GenericModel
 
 
@@ -82,6 +82,38 @@ class QA(GenericModel, Generic[AnswerType]):
         if (obj["type"] == cls.type_enum.many) or (obj["type"] == cls.type_enum.drag):  # type: ignore
             return cls[list]._parse_obj(obj)  # type: ignore
         if obj["type"] == cls.type_enum.join:  # type: ignore
+            return cls[dict]._parse_obj(obj)  # type: ignore
+        else:
+            return cls._parse_obj(obj)  # type: ignore
+
+    @classmethod
+    def _parse_obj(cls: Type["Model"], obj: Any) -> "Model":
+        return super().parse_obj(obj)  # type: ignore
+
+
+class QAIncomplete(GenericModel, Generic[AnswerType]):
+    class Config:
+        use_enum_values = True
+        allow_population_by_field_name = True
+        json_encoders = {ObjectId: lambda v: str(v)}
+        allow_mutation = False
+
+    id: StrObjectId = Field(None, alias="_id")
+    type: QA.type_enum
+    question: constr(min_length=1)  # type: ignore
+    answer: list[constr(min_length=1)]  # type: ignore
+    title: str
+    is_correct: bool
+    by: list[StrObjectId]
+    create: StrObjectId
+
+    @classmethod
+    def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
+        if obj["type"] == QA.type_enum.one:  # type: ignore
+            return cls[str]._parse_obj(obj)  # type: ignore
+        if (obj["type"] == QA.type_enum.many) or (obj["type"] == QA.type_enum.drag):  # type: ignore
+            return cls[list]._parse_obj(obj)  # type: ignore
+        if obj["type"] == QA.type_enum.join:  # type: ignore
             return cls[dict]._parse_obj(obj)  # type: ignore
         else:
             return cls._parse_obj(obj)  # type: ignore
