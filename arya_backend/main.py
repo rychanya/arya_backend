@@ -10,7 +10,8 @@ app = FastAPI()
 
 static = path.join(path.abspath(path.dirname(__file__)), "dist")
 
-app.mount("/", StaticFiles(directory=static, html=True), name="static")
+if path.isdir(static):
+    app.mount("/", StaticFiles(directory=static, html=True), name="static")
 
 origins = ["*"]
 
