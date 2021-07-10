@@ -13,8 +13,8 @@ static = path.join(path.abspath(path.dirname(__file__)), "dist")
 if path.isdir(static):
     app.mount("/", StaticFiles(directory=static, html=True), name="static")
 
-# origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
-origins = ["*"]
+origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
+# origins = ["*"]
 
 
 app.include_router(auth.router)
