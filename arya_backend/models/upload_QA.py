@@ -10,6 +10,7 @@ class Foreign(BaseModel):
 
     id: StrObjectId
     col: str
+    new: bool = False
 
 
 class Upload(BaseModel):

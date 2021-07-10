@@ -74,7 +74,7 @@ def parse_qa(qa: QAIncomplete) -> Foreign:
         doc_id = is_exists(qa.type, qa.answer, qa.question)
         if doc_id:
             return Foreign(id=doc_id, col="QA")
-    return Foreign(id=get_or_create_qa_incomplite(qa), col="QA_INC")
+    return get_or_create_qa_incomplite(qa)
 
 
 def parse(id: ObjectId):

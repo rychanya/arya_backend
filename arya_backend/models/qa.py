@@ -121,3 +121,22 @@ class QAIncomplete(GenericModel, Generic[AnswerType]):
     @classmethod
     def _parse_obj(cls: Type["Model"], obj: Any) -> "Model":
         return super().parse_obj(obj)  # type: ignore
+
+
+class QAINCEL(BaseModel):
+    class Config:
+        json_encoders = {ObjectId: lambda v: str(v)}
+
+    id: StrObjectId
+    is_correct: bool
+    answer: list[str]
+
+
+class QAINC(BaseModel):
+    class Config:
+        json_encoders = {ObjectId: lambda v: str(v)}
+
+    type: str
+    question: str
+    title: str
+    answers: list[QAINCEL]

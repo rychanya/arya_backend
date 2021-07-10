@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from pymongo.errors import DuplicateKeyError
 
@@ -17,9 +17,10 @@ def get(username: str) -> Optional[UserInDB]:
 
 
 def create(username: str, password: str) -> Optional[UserInDB]:
-    payload: dict[str, str] = {
+    payload: dict[str, Union[str, list[str]]] = {
         "username": username,
         "hashed_password": auth.get_password_hash(password),
+        "scopes": ["qa:add"],
     }
     try:
         collection.insert_one(document=payload)

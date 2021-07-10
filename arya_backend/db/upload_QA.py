@@ -1,6 +1,5 @@
-from itertools import chain
-
 from bson.objectid import ObjectId
+from pydantic import parse_obj_as
 
 from arya_backend.db import MONGO_DB_NAME, client
 from arya_backend.models.upload_QA import Upload
@@ -51,4 +50,10 @@ def create(upload: Upload):
 
 
 def get_by_user(user_id: ObjectId):
-    return collection.aggregate([{"$match": {"by": user_id}}])
+    return parse_obj_as(
+        list[Upload], list(collection.aggregate([{"$match": {"by": user_id}}]))
+    )
+
+
+def get_by_id(id: ObjectId):
+    return collection.find_one({"_id": id})

@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -7,6 +8,8 @@ from fastapi import (
     Security,
     UploadFile,
 )
+from pymongo.operations import UpdateOne
+from starlette.types import Scope
 
 from arya_backend.db import QA, fs, upload_QA
 from arya_backend.dependencies import get_current_user
@@ -56,8 +59,16 @@ def upload(
     return str(file_id)
 
 
+@router.get("/{id}")
+def get_uplod_by_id(
+    id: str, user: User = Security(get_current_user, scopes=["qa:add"])
+):
+    doc = upload_QA.get_by_id(ObjectId(id))
+    if doc and doc["by"] == user.id:
+        return Upload(**doc)
+
+
 @router.get("/")
 def get(user: User = Security(get_current_user, scopes=["qa:add"])):
     upload = upload_QA.get_by_user(user.id)
-    print(list(upload))
-    return
+    return upload
