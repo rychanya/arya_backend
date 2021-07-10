@@ -15,6 +15,10 @@ if path.isdir(static):
 
 origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
 
+
+app.include_router(auth.router)
+app.include_router(qa.router)
+app.include_router(upload.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -22,6 +26,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(auth.router)
-app.include_router(qa.router)
-app.include_router(upload.router)
