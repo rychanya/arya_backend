@@ -8,8 +8,6 @@ from fastapi import (
     Security,
     UploadFile,
 )
-from pymongo.operations import UpdateOne
-from starlette.types import Scope
 
 from arya_backend.db import QA, fs, upload_QA
 from arya_backend.dependencies import get_current_user
@@ -57,6 +55,11 @@ def upload(
     file_id = fs.put(file.file, metadata={"by": user.id})
     bt.add_task(parse, file_id)
     return str(file_id)
+
+
+@router.options("/")
+def opload_opt():
+    ...
 
 
 @router.get("/{id}")
