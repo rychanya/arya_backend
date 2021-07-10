@@ -13,7 +13,8 @@ static = path.join(path.abspath(path.dirname(__file__)), "dist")
 if path.isdir(static):
     app.mount("/", StaticFiles(directory=static, html=True), name="static")
 
-origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
+# origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
+origins = ["*"]
 
 
 app.include_router(auth.router)
@@ -22,7 +23,7 @@ app.include_router(upload.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    # allow_credentials=True,
+    allow_methods=["POST", "GET", "OPTIONS"],
     allow_headers=["*"],
 )
