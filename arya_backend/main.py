@@ -1,6 +1,7 @@
 from os import path
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -11,7 +12,7 @@ app = FastAPI()
 static = path.join(path.abspath(path.dirname(__file__)), "dist")
 
 if path.isdir(static):
-    app.mount("/", StaticFiles(directory=static, html=True), name="static")
+    app.mount("/web", StaticFiles(directory=static, html=True), name="static")
 
 origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
 # origins = ["*"]
@@ -20,6 +21,11 @@ origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
 app.include_router(auth.router)
 app.include_router(qa.router)
 app.include_router(upload.router)
+
+@app.get('/')
+def redirect_to_web():
+    return RedirectResponse("/web")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
