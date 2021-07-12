@@ -1,4 +1,5 @@
 from bson.objectid import ObjectId
+from pydantic import BaseModel
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -46,16 +47,20 @@ router = APIRouter(prefix="/uploads")
 #     if payload and payload.by == user.id:
 #         return payload
 
+class A(BaseModel):
+    a: str
 
 @router.post("/")
 async def upload(
-    bt: BackgroundTasks,
-    file: UploadFile = File(...),
+    # bt: BackgroundTasks,
+    # file: UploadFile = File(...),
+    a: A,
     user: User = Security(get_current_user, scopes=["qa:add"]),
 ):
-    file_id = fs.put(file.file, metadata={"by": user.id})
-    bt.add_task(parse, file_id)
-    return str(file_id)
+    # file_id = fs.put(file.file, metadata={"by": user.id})
+    # bt.add_task(parse, file_id)
+    # return str(file_id)
+    return a
 
 @router.get("/{id}")
 def get_uplod_by_id(
