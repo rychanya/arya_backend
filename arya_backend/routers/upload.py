@@ -7,6 +7,7 @@ from fastapi import (
     HTTPException,
     Security,
     UploadFile,
+    Request
 )
 
 from arya_backend.db import QA, fs, upload_QA
@@ -47,19 +48,23 @@ router = APIRouter(prefix="/uploads")
 
 
 @router.post("/")
-def upload(
+async def upload(
     bt: BackgroundTasks,
-    file: UploadFile = File(...),
+    # file: UploadFile = File(...),
+    req: Request,
     user: User = Security(get_current_user, scopes=["qa:add"]),
 ):
-    file_id = fs.put(file.file, metadata={"by": user.id})
-    bt.add_task(parse, file_id)
-    return str(file_id)
+    # file_id = fs.put(file.file, metadata={"by": user.id})
+    # bt.add_task(parse, file_id)
+    # return str(file_id)
+    json = await req.form()
+    bt.add_task(lambda json: print(json), json )
+    return 'ok'
 
 
-@router.options("/")
-def opload_opt():
-    ...
+# @router.options("/")
+# def opload_opt():
+#     ...
 
 
 @router.get("/{id}")
