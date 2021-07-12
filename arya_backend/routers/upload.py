@@ -50,22 +50,12 @@ router = APIRouter(prefix="/uploads")
 @router.post("/")
 async def upload(
     bt: BackgroundTasks,
-    # file: UploadFile = File(...),
-    req: Request,
+    file: UploadFile = File(...),
     user: User = Security(get_current_user, scopes=["qa:add"]),
 ):
-    # file_id = fs.put(file.file, metadata={"by": user.id})
-    # bt.add_task(parse, file_id)
-    # return str(file_id)
-    json = await req.form()
-    bt.add_task(lambda json: print(json), json )
-    return 'ok'
-
-
-# @router.options("/")
-# def opload_opt():
-#     ...
-
+    file_id = fs.put(file.file, metadata={"by": user.id})
+    bt.add_task(parse, file_id)
+    return str(file_id)
 
 @router.get("/{id}")
 def get_uplod_by_id(
