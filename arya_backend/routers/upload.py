@@ -62,7 +62,7 @@ async def upload(
     # file_id = fs.put(file.file, metadata={"by": user.id})
     # bt.add_task(parse, file_id)
     # return str(file_id)
-    return payload.dict()
+    return payload.data
 
 
 @router.get("/{id}")
