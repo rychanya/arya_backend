@@ -21,3 +21,12 @@ class Upload(BaseModel):
     id: StrObjectId = Field(None, alias="_id")
     by: StrObjectId
     data: list[Foreign] = []
+
+class Payload(BaseModel):
+    __root__: dict[str, list[dict[str, str]]]  # type: ignore
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def __getitem__(self, item):
+        return self.__root__[item]

@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from arya_backend.db import QA, fs, upload_QA
 from arya_backend.dependencies import get_current_user
 from arya_backend.models.auth import User
-from arya_backend.models.upload_QA import Upload
+from arya_backend.models.upload_QA import Upload, Payload
 from arya_backend.parser import parse
 
 router = APIRouter(prefix="/uploads")
@@ -56,13 +56,13 @@ class A(BaseModel):
 async def upload(
     # bt: BackgroundTasks,
     # file: UploadFile = File(...),
-    req: Request,
+    payload: Payload,
     user: User = Security(get_current_user, scopes=["qa:add"]),
 ):
     # file_id = fs.put(file.file, metadata={"by": user.id})
     # bt.add_task(parse, file_id)
     # return str(file_id)
-    return await req.json()
+    return payload.dict()
 
 
 @router.get("/{id}")
