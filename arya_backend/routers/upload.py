@@ -1,15 +1,15 @@
 from bson.objectid import ObjectId
-from pydantic import BaseModel
 from fastapi import (
     APIRouter,
     BackgroundTasks,
     Depends,
     File,
     HTTPException,
+    Request,
     Security,
     UploadFile,
-    Request
 )
+from pydantic import BaseModel
 
 from arya_backend.db import QA, fs, upload_QA
 from arya_backend.dependencies import get_current_user
@@ -47,20 +47,23 @@ router = APIRouter(prefix="/uploads")
 #     if payload and payload.by == user.id:
 #         return payload
 
+
 class A(BaseModel):
     a: str
+
 
 @router.post("/")
 async def upload(
     # bt: BackgroundTasks,
     # file: UploadFile = File(...),
-    a: A,
+    req: Request,
     user: User = Security(get_current_user, scopes=["qa:add"]),
 ):
     # file_id = fs.put(file.file, metadata={"by": user.id})
     # bt.add_task(parse, file_id)
     # return str(file_id)
-    return a
+    return await req.json()
+
 
 @router.get("/{id}")
 def get_uplod_by_id(

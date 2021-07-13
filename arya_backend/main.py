@@ -11,7 +11,6 @@ app = FastAPI()
 static = path.join(path.abspath(path.dirname(__file__)), "dist")
 
 
-
 origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
 # origins = ["*"]
 
