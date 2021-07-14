@@ -48,10 +48,6 @@ router = APIRouter(prefix="/uploads")
 #         return payload
 
 
-class A(BaseModel):
-    a: str
-
-
 @router.post("/")
 async def upload(
     # bt: BackgroundTasks,
@@ -62,7 +58,7 @@ async def upload(
     # file_id = fs.put(file.file, metadata={"by": user.id})
     # bt.add_task(parse, file_id)
     # return str(file_id)
-    return "okkkkk!!!"
+    return payload.answer
 
 
 @router.get("/{id}")

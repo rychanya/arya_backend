@@ -23,4 +23,4 @@ class Upload(BaseModel):
     data: list[Foreign] = []
 
 class Payload(BaseModel):
-    user: str
+    answer: str
