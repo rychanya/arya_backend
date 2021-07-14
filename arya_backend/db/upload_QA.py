@@ -7,10 +7,8 @@ from arya_backend.models.upload_QA import Upload
 collection = client.get_database(MONGO_DB_NAME).get_collection("UPLOAD")
 
 
-def create(upload: Upload):
-    return collection.insert_one(
-        upload.dict(exclude_none=True, by_alias=True)
-    ).inserted_id
+def create(user_id: ObjectId):
+    return collection.insert_one({"by": user_id}).inserted_id
 
 
 # def get_by_user(user: ObjectId):
@@ -57,3 +55,7 @@ def get_by_user(user_id: ObjectId):
 
 def get_by_id(id: ObjectId):
     return collection.find_one({"_id": id})
+
+
+def set_data(id: ObjectId, data):
+    collection.update_one({"_id": id}, {"$set": {"data": data}})
