@@ -22,5 +22,10 @@ class Upload(BaseModel):
     by: StrObjectId
     data: list[Foreign] = []
 
+
 class Payload(BaseModel):
     answer: str
+    title: str
+    question: str
+    type: str
+    is_correct: str
