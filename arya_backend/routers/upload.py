@@ -52,13 +52,13 @@ router = APIRouter(prefix="/uploads")
 async def upload(
     # bt: BackgroundTasks,
     # file: UploadFile = File(...),
-    payload: Payload,
+    payload: list[Payload],
     user: User = Security(get_current_user, scopes=["qa:add"]),
 ):
     # file_id = fs.put(file.file, metadata={"by": user.id})
     # bt.add_task(parse, file_id)
     # return str(file_id)
-    return payload.dict()
+    return [el.dict() for el in payload]
 
 
 @router.get("/{id}")
