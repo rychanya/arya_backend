@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError

@@ -1,14 +1,9 @@
-from io import BytesIO
-
-from bson.binary import USER_DEFINED_SUBTYPE
 from bson.objectid import ObjectId
-from openpyxl import load_workbook
 
-from arya_backend.db import fs
 from arya_backend.db.QA import get_or_create_qa_incomplite, is_exists
 from arya_backend.db.upload_QA import set_data
 from arya_backend.models.qa import QA, QAIncomplete
-from arya_backend.models.upload_QA import Foreign, Payload, Upload
+from arya_backend.models.upload_QA import Foreign, Payload
 
 
 def parse_type(type: str) -> str:
@@ -43,31 +38,6 @@ def normalize_cp1251(s: str) -> str:
         return s.encode("cp1251").decode("utf8")
     except UnicodeDecodeError:
         return s
-
-
-# def row_iter(stream: BytesIO, user: ObjectId):
-#     wb = load_workbook(filename=stream, read_only=True)
-#     for ws in wb.worksheets:
-#         title = normalize_cp1251(str(ws.title))
-#         for row in ws.iter_rows(min_row=2, values_only=True):
-#             try:
-#                 type = parse_type(row[6])
-#                 answer = parse_answer(row[4], type)
-#                 question = row[1]
-#                 is_correct = parse_correct(row[2])
-#                 yield QAIncomplete.parse_obj(
-#                     {
-#                         "title": title,
-#                         "type": type,
-#                         "answer": answer,
-#                         "question": question,
-#                         "is_correct": is_correct,
-#                         "by": [user],
-#                         "create": user,
-#                     }
-#                 )
-#             except (TypeError, KeyError):
-#                 pass
 
 
 def row_iter(user_id: ObjectId, payload: list[Payload]):

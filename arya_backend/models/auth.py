@@ -1,7 +1,6 @@
 from typing import Optional
 
 from bson import ObjectId
-from bson.objectid import ObjectId
 from pydantic import BaseModel, Field
 
 from arya_backend.models.qa import StrObjectId
