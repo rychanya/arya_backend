@@ -13,8 +13,6 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-multipart = "^0.0.5"
 pymongo = "^3.11.4"
 dnspython = "^2.1.0"
-openpyxl = "^3.0.7"
-aiofiles = "^0.7.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -22,6 +20,7 @@ black = "^21.5b0"
 isort = "^5.8.0"
 nox = "^2020.12.31"
 python-dotenv = "^0.17.1"
+flake8 = "^3.9.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

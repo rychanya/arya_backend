@@ -62,3 +62,4 @@ def deploy(session: nox.Session):
 def prety(session: nox.Session):
     session.run("isort", ".", external=True)
     session.run("black", ".", external=True)
+    session.run("flake8", "arya_backend/", external=True)
