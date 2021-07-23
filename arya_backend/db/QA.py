@@ -1,4 +1,3 @@
-import math
 from typing import Optional
 
 from bson import ObjectId
@@ -19,26 +18,26 @@ collection_incomplete = client.get_database(MONGO_DB_NAME).get_collection("QA_IN
 collection.create_index("question", collation=Collation(locale="ru", strength=2))
 
 
-def search(q: str, page: int = 1):
-    LIMIT = 10
-    if page < 1:
-        page = 1
-    pipeline = {
-        "$match": {
-            "correct": {"$exists": True},
-            "question": {"$regex": f".*{q}.*", "$options": "i"},
-        }
-    }
-    docs_count = list(collection.aggregate(pipeline=[pipeline, {"$count": "count"}]))[
-        0
-    ]["count"]
-    paginator = {"current": page, "all": math.ceil(docs_count / LIMIT)}
-    docs = list(
-        collection.aggregate(
-            pipeline=[pipeline, {"$skip": (page - 1) * LIMIT}, {"$limit": LIMIT}]
-        )
-    )
-    return (parse_obj_as(list[QA], docs), paginator)
+# def search(q: str, page: int = 1):
+# LIMIT = 10
+# if page < 1:
+#     page = 1
+# pipeline = {
+#     "$match": {
+#         "correct": {"$exists": True},
+#         "question": {"$regex": f".*{q}.*", "$options": "i"},
+#     }
+# }
+# docs_count = list(collection.aggregate(pipeline=[pipeline, {"$count": "count"}]))[
+#     0
+# ]["count"]
+# paginator = {"current": page, "all": math.ceil(docs_count / LIMIT)}
+# docs = list(
+#     collection.aggregate(
+#         pipeline=[pipeline, {"$skip": (page - 1) * LIMIT}, {"$limit": LIMIT}]
+#     )
+# )
+# return (parse_obj_as(list[QA], docs), paginator)
 
 
 def get(id: str) -> Optional[QA]:
