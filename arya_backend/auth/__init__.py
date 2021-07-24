@@ -11,7 +11,7 @@ from arya_backend.config import (
     AUTH_ALGORITHM,
     AUTH_SECRET_KEY,
 )
-from arya_backend.db import user as User
+from arya_backend.db.user import User
 from arya_backend.models.auth import TokenData
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -26,10 +26,10 @@ def get_password_hash(password: str) -> str:
 
 
 def authenticate_user(username: str, password: str):
-    user = User.get(username)
+    user = User().get(username)
     if not user:
         return None
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user["hashed_password"]):
         return None
     return user
 

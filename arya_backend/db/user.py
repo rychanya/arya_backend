@@ -1,29 +1,39 @@
-from typing import Optional, Union
-
 from pymongo.errors import DuplicateKeyError
 
 from arya_backend import auth
-from arya_backend.db import MONGO_DB_NAME, client
-from arya_backend.models.auth import UserInDB
+from arya_backend.db import client
 
-collection = client.get_database(MONGO_DB_NAME).get_collection("Users")
+COLLECTION_NAME = "Users"
+
+
+collection = client.get_database().get_collection(COLLECTION_NAME)
 collection.create_index("username", unique=True)
 
 
-def get(username: str) -> Optional[UserInDB]:
-    user = collection.find_one(filter={"username": username})
-    if user:
-        return UserInDB.parse_obj(user)
+class User:
+    def __init__(self) -> None:
+        self.client = client
 
+    def get(self, username: str):
+        return (
+            self.client.get_database()
+            .get_collection(COLLECTION_NAME)
+            .find_one({"username": username})
+        )
 
-def create(username: str, password: str) -> Optional[UserInDB]:
-    payload: dict[str, Union[str, list[str]]] = {
-        "username": username,
-        "hashed_password": auth.get_password_hash(password),
-        "scopes": ["qa:add"],
-    }
-    try:
-        collection.insert_one(document=payload)
-        return get(username)
-    except DuplicateKeyError:
-        ...
+    def create(self, username: str, password: str):
+        try:
+            return (
+                self.client.get_database()
+                .get_collection(COLLECTION_NAME)
+                .insert_one(
+                    {
+                        "username": username,
+                        "hashed_password": auth.get_password_hash(password),
+                        "scopes": ["qa:add"],
+                    }
+                )
+                .inserted_id
+            )
+        except DuplicateKeyError:
+            return None
