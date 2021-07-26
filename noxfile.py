@@ -9,9 +9,7 @@ nox.options.sessions = ["prety"]
 @nox.session(py=False)
 def serv(session: nox.Session):
     load_dotenv()
-    # session.log(os.path.dirname(__file__))
     session.install(".")
-    # session.log(os.environ.get("MONGO_USER"))
     session.run(
         "uvicorn",
         "arya_backend.main:app",
@@ -63,3 +61,4 @@ def prety(session: nox.Session):
     session.run("isort", ".", external=True)
     session.run("black", ".", external=True)
     session.run("flake8", "arya_backend/", external=True)
+    session.install(".")
