@@ -5,7 +5,6 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 
 from arya_backend.auth import decode_access_token
 from arya_backend.db.user import User as User_CRUD
-from arya_backend.db import client
 from arya_backend.models.auth import User, UserInDB
 
 scopes = {"qa:add": "add qa"}
@@ -14,7 +13,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token", scopes=scopes)
 
 
 async def get_current_user(
-    security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme), user_db: User_CRUD = Depends()
+    security_scopes: SecurityScopes,
+    token: str = Depends(oauth2_scheme),
+    user_db: User_CRUD = Depends(),
 ) -> Optional[User]:
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'

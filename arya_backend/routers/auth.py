@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from arya_backend.auth import authenticate_user, create_access_token
+from arya_backend.auth import create_access_token, verify_password
 from arya_backend.db.user import User
 from arya_backend.dependencies import get_current_user
 from arya_backend.models.auth import SignInUser, Token
@@ -11,8 +11,8 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
+    user = User().get(form_data.username)
+    if (not user) or (not verify_password(form_data.password, user["hashed_password"])):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",

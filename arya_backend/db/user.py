@@ -1,3 +1,6 @@
+from typing import Optional
+
+from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 
 from arya_backend import auth
@@ -12,19 +15,19 @@ collection.create_index("username", unique=True)
 
 class User:
     def __init__(self) -> None:
-        self.client = client
+        self._client = client
 
     def get(self, username: str):
         return (
-            self.client.get_database()
+            self._client.get_database()
             .get_collection(COLLECTION_NAME)
             .find_one({"username": username})
         )
 
-    def create(self, username: str, password: str):
+    def create(self, username: str, password: str) -> Optional[ObjectId]:
         try:
-            return (
-                self.client.get_database()
+            _id = (
+                self._client.get_database()
                 .get_collection(COLLECTION_NAME)
                 .insert_one(
                     {
@@ -35,5 +38,11 @@ class User:
                 )
                 .inserted_id
             )
+            if isinstance(_id, ObjectId):
+                return _id
         except DuplicateKeyError:
             return None
+
+    @staticmethod
+    def create_index():
+        collection.create_index("username", unique=True)
