@@ -1,16 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from arya_backend.routers import auth, qa, upload
+from arya_backend.routers import qa, upload, user
 
 app = FastAPI()
 
 
 origins = ["https://kittyanswers.herokuapp.com", "http://localhost:8080"]
-# origins = ["*"]
 
 
-app.include_router(auth.router)
+app.include_router(user.router)
 app.include_router(qa.router)
 app.include_router(upload.router)
 

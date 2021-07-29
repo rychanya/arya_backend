@@ -9,7 +9,7 @@ from arya_backend.models.auth import User, UserInDB
 
 scopes = {"qa:add": "add qa"}
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token", scopes=scopes)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/token", scopes=scopes)
 
 
 async def get_current_user(
