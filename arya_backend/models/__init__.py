@@ -1,9 +1,8 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
-class ErrorModel(BaseModel):
-    error: str
-
-
-class SucsesModel(BaseModel):
-    message: str
+class MessageModel(BaseModel):
+    error: Optional[str]
+    data: Optional[str]

@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from starlette.status import HTTP_201_CREATED
 
 from arya_backend.auth import create_access_token, verify_password
 from arya_backend.db.user import User
 from arya_backend.dependencies import get_current_user
-from arya_backend.models import ErrorModel, SucsesModel
+from arya_backend.models import MessageModel
 from arya_backend.models.auth import SignInUser, Token
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -30,8 +29,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @router.post(
     "/",
     responses={
-        status.HTTP_200_OK: {"model": ErrorModel},
-        status.HTTP_201_CREATED: {"model": SucsesModel},
+        status.HTTP_200_OK: {"model": MessageModel},
+        status.HTTP_201_CREATED: {"model": MessageModel},
     },
 )
 async def signin(payload: SignInUser, user_db: User = Depends()):
@@ -41,9 +40,9 @@ async def signin(payload: SignInUser, user_db: User = Depends()):
             status_code=status.HTTP_200_OK, content={"error": "User alredy exists."}
         )
     else:
-        return JSONResponse(status_code=status.HTTP_201_CREATED)
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"data": "OK"})
 
 
-@router.get("/")
+@router.get("/", responses={status.HTTP_200_OK: {"model": MessageModel}})
 async def get_me(user=Depends(get_current_user)):
-    return user.username
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"data": user.username})
