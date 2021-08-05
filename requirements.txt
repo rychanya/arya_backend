@@ -5,7 +5,7 @@ colorama==0.4.4; python_version >= "2.7" and python_full_version < "3.0.0" and s
 cryptography==3.4.7; python_version >= "3.6"
 dnspython==2.1.0; python_version >= "3.6"
 ecdsa==0.17.0; python_version >= "2.6" and python_full_version < "3.0.0" or python_full_version >= "3.3.0"
-fastapi==0.64.0; python_version >= "3.6"
+fastapi==0.65.2; python_version >= "3.6"
 h11==0.12.0; python_version >= "3.6"
 httptools==0.1.2; sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy"
 passlib==1.7.4
@@ -19,7 +19,7 @@ python-multipart==0.0.5
 pyyaml==5.4.1; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0"
 rsa==4.7.2; python_version >= "3.5" and python_version < "4"
 six==1.16.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_version >= "3.6" and python_full_version >= "3.3.0"
-starlette==0.13.6; python_version >= "3.6"
+starlette==0.14.2; python_version >= "3.6"
 typing-extensions==3.10.0.0; python_full_version >= "3.6.1" and python_version >= "3.6"
 uvicorn==0.13.4
 uvloop==0.15.3; sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy" and python_version >= "3.7"
