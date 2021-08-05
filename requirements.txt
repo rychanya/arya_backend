@@ -1,4 +1,5 @@
 bcrypt==3.2.0; python_version >= "3.6"
+certifi==2021.5.30
 cffi==1.14.6
 click==7.1.2; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 colorama==0.4.4; python_version >= "2.7" and python_full_version < "3.0.0" and sys_platform == "win32" or sys_platform == "win32" and python_full_version >= "3.5.0"
