@@ -19,7 +19,7 @@ def parse_answer(answer: str, answer_type: str) -> list[str]:
     if answer_type == QA.type_enum.one:
         return [answer]
     elif answer_type == QA.type_enum.many:
-        return answer.split(";_x000D_\n")
+        return answer.split(";\r\r\n")
     else:
         raise TypeError
 
