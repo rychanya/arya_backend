@@ -1,6 +1,5 @@
 import pytest
 from fastapi.testclient import TestClient
-from pymongo import response
 from pymongo.collection import Collection
 
 from arya_backend.auth import decode_access_token
