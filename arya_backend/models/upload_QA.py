@@ -4,13 +4,16 @@ from pydantic import BaseModel, Field
 from arya_backend.models.qa import StrObjectId
 
 
-class Foreign(BaseModel):
+class Payload(BaseModel):
     class Config:
         json_encoders = {ObjectId: lambda v: str(v)}
 
-    id: StrObjectId
-    col: str
-    new: bool = False
+    answer: str
+    title: str
+    question: str
+    type: str
+    is_correct: str
+    foreign_id: StrObjectId = Field(None)
 
 
 class Upload(BaseModel):
@@ -20,12 +23,4 @@ class Upload(BaseModel):
 
     id: StrObjectId = Field(None, alias="_id")
     by: StrObjectId
-    data: list[Foreign] = []
-
-
-class Payload(BaseModel):
-    answer: str
-    title: str
-    question: str
-    type: str
-    is_correct: str
+    data: list[Payload] = []

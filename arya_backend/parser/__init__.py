@@ -1,9 +1,14 @@
+from typing import Tuple, Union
+
 from bson.objectid import ObjectId
 
-from arya_backend.db.QA import get_or_create_qa_incomplite, is_exists
-from arya_backend.db.upload_QA import set_data
-from arya_backend.models.qa import QA, QAIncomplete
-from arya_backend.models.upload_QA import Foreign, Payload
+from arya_backend.db.QA import QACRUD
+from arya_backend.db.upload_QA import UploadCRUD
+
+# from arya_backend.db.QA import get_or_create_qa_incomplite, is_exists
+# from arya_backend.db.upload_QA import set_data
+from arya_backend.models.qa import QA
+from arya_backend.models.upload_QA import Payload
 
 
 def parse_type(type: str) -> str:
@@ -15,11 +20,14 @@ def parse_type(type: str) -> str:
         raise TypeError
 
 
-def parse_answer(answer: str, answer_type: str) -> list[str]:
+def parse_answers(
+    answer: str, answer_type: str
+) -> Union[Tuple[list[str], str], Tuple[list[str], list[str]]]:
     if answer_type == QA.type_enum.one:
-        return [answer]
+        return ([answer], answer)
     elif answer_type == QA.type_enum.many:
-        return answer.split(";\r\r\n")
+        answers = answer.split(";\r\r\n")
+        return (answers, answers)
     else:
         raise TypeError
 
@@ -40,37 +48,36 @@ def normalize_cp1251(s: str) -> str:
         return s
 
 
-def row_iter(user_id: ObjectId, payload: list[Payload]):
+def row_iter(payload: list[Payload]):
     for row in payload:
         try:
             title = normalize_cp1251(row.title)
             type = parse_type(row.type)
-            answer = parse_answer(row.answer, type)
+            answers, normalize_answer = parse_answers(row.answer, type)
             question = row.question
             is_correct = parse_correct(row.is_correct)
-            yield QAIncomplete.parse_obj(
-                {
-                    "title": title,
-                    "type": type,
-                    "answer": answer,
-                    "question": question,
-                    "is_correct": is_correct,
-                    "by": [user_id],
-                    "create": user_id,
-                }
-            )
+            qa_dict = {
+                "tags": {"title": title},
+                "type": type,
+                "answers": answers,
+                "question": question,
+                "incomplete": True,
+            }
+            if is_correct:
+                qa_dict["correct"] = normalize_answer
+            else:
+                qa_dict["incorrect"] = [normalize_answer]
+            yield qa_dict
         except (TypeError, KeyError):
             pass
 
 
-def parse_qa(qa: QAIncomplete) -> Foreign:
-    if qa.is_correct:
-        doc_id = is_exists(qa.type, qa.answer, qa.question)
-        if doc_id:
-            return Foreign(id=doc_id, col="QA")
-    return get_or_create_qa_incomplite(qa)
-
-
-def parse(id: ObjectId, user_id: ObjectId, payload: list[Payload]):
-    data = [parse_qa(qa).dict() for qa in row_iter(user_id, payload)]
-    set_data(id, data)
+def parse(id: ObjectId):
+    payload = UploadCRUD().get_by_id(id)
+    if payload is None:
+        return
+    data = [QA.parse_obj(qa) for qa in row_iter(payload.data)]
+    for d in data:
+        db = QACRUD()
+        print(len(db.get_or_create(d)))
+    # set_data(id, data)

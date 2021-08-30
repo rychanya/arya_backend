@@ -1,5 +1,7 @@
 from typing import Optional
 
+from bson import ObjectId
+from bson.errors import InvalidId
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 
@@ -41,3 +43,10 @@ async def get_current_user(
     if user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
+
+
+def id_parser(id: str) -> Optional[ObjectId]:
+    try:
+        return ObjectId(id)
+    except (InvalidId, TypeError):
+        return

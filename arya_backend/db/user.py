@@ -6,10 +6,10 @@ from pymongo.errors import DuplicateKeyError
 from arya_backend import auth
 from arya_backend.db import client
 
-COLLECTION_NAME = "Users"
+USERS_COLLECTION_NAME = "Users"
 
 
-collection = client.get_database().get_collection(COLLECTION_NAME)
+collection = client.get_database().get_collection(USERS_COLLECTION_NAME)
 collection.create_index("username", unique=True)
 
 
@@ -20,7 +20,7 @@ class User:
     def get(self, username: str):
         return (
             self._client.get_database()
-            .get_collection(COLLECTION_NAME)
+            .get_collection(USERS_COLLECTION_NAME)
             .find_one({"username": username})
         )
 
@@ -28,7 +28,7 @@ class User:
         try:
             _id = (
                 self._client.get_database()
-                .get_collection(COLLECTION_NAME)
+                .get_collection(USERS_COLLECTION_NAME)
                 .insert_one(
                     {
                         "username": username,
