@@ -5,7 +5,8 @@ from arya_backend.db.upload_QA import UploadCRUD
 from arya_backend.dependencies import get_current_user
 from arya_backend.models.auth import User
 from arya_backend.models.upload_QA import Payload, Upload
-from arya_backend.parser import parse
+
+# from arya_backend.parser import parse
 
 router = APIRouter(prefix="/uploads", tags=["Upload"])
 
@@ -18,7 +19,7 @@ async def upload(
     db: UploadCRUD = Depends(),
 ):
     upload_id = db.create(user.id, payload)
-    bt.add_task(parse, upload_id)
+    # bt.add_task(parse, upload_id)
     return str(upload_id)
 
 

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from bson import ObjectId
 
@@ -6,7 +6,7 @@ from bson import ObjectId
 from pymongo.collation import Collation
 
 from arya_backend.db import MONGO_DB_NAME, client
-from arya_backend.models.qa import QA, JoinAnswer, ManyAnswer, OneAnswer
+from arya_backend.models.qa import QA, DragAnswer, JoinAnswer, ManyAnswer, OneAnswer
 
 QA_COLLECTION_NAME = "QA"
 
@@ -22,49 +22,91 @@ class QACRUD:
         if doc:
             return QA.parse_obj(doc)
 
-    def get_or_create(self, qa: QA):
+    def add_result(
+        self,
+        id: ObjectId,
+        answer: Union[OneAnswer, ManyAnswer, JoinAnswer, DragAnswer],
+        is_correct: bool,
+    ):
+
+        if is_correct is True:
+            collection.update_one({"_id": id}, {"$set": {"correct": answer.to_mongo()}})
+        elif is_correct is False:
+            qa = QA.parse_obj(collection.find_one({"_id": id}))
+            incorect = set(qa.incorrect)
+            incorect.add(answer)  # type: ignore
+            incorect = list([el.to_mongo() for el in incorect])  # type: ignore
+            collection.update_one({"_id": id}, {"$set": {"incorrect": incorect}})
+
+    def load_or_create_complete_qa(self, qa: QA):
         if qa.incomplete:
-            return self._get_or_create_incomplete_qa(qa)
-        else:
-            return self._get_or_create_complete_qa(qa)
-
-    def _get_or_create_complete_qa(self, qa: QA):
-        ...
-
-    def _get_or_create_incomplete_qa(self, qa: QA):
+            ValueError("qa must be complete")
         filter = {
-            "type": qa.type,
             "question": qa.question,
-            "answers": {"$all": [{"$elemMatch": {"$eq": el}} for el in qa.answers]},
+            "type": qa.type,
             "incomplete": qa.incomplete,
-            "extra_answers": qa.extra_answers,
-            **QACRUD._make_correct_query(qa),
+            "$expr": {"$setEquals": [qa.answers, "$answers"]},
         }
-        update = {
-            "$setOnInsert": {
-                "incorrect": qa.incorrect,
-                "tags": qa.tags,
-                "answers": qa.answers,
-            }
-        }
-        result = collection.update_one(filter=filter, update=update, upsert=True)
-        if result.upserted_id is not None:
-            return result.upserted_id, True
-        result = list(collection.find(filter=filter))
+        doc = collection.find_one(filter=filter)
+        if doc:
+            return QA.parse_obj(doc)
+        else:
+            _id = collection.insert_one(qa.to_mongo()).inserted_id
+            return qa.copy(update={"id": _id})
 
-    @staticmethod
-    def _make_correct_query(qa: QA) -> dict:
-        if qa.type == QA.type_enum.one and isinstance(qa.correct, OneAnswer):
-            return {"correct": str(qa.correct)}
-        elif qa.type == QA.type_enum.drag and isinstance(qa.correct, ManyAnswer):
-            return {"correct": list(qa.correct)}
-        elif qa.type == QA.type_enum.many and isinstance(qa.correct, ManyAnswer):
-            return {
-                "correct": {"$all": [{"$elemMatch": {"$eq": el}} for el in qa.correct]}
+    def get_or_create(self, qa: QA):
+        pipeline = [
+            {
+                "$match": {
+                    "$and": [
+                        {"question": qa.question},
+                        {"type": qa.type},
+                        {
+                            "$or": [
+                                {
+                                    "incomplete": True,
+                                    "$expr": {"$setIsSubset": [qa.answers, "$answers"]},
+                                },
+                                {
+                                    "incomplete": False,
+                                    "$expr": {"$setEquals": [qa.answers, "$answers"]},
+                                },
+                            ]
+                        },
+                    ]
+                }
             }
-        elif qa.type == QA.type_enum.join and isinstance(qa.correct, JoinAnswer):
-            return {f"correct.{key}": value for key, value in qa.correct.items()}
-        raise ValueError
+        ]
+        for row_qa in collection.aggregate(pipeline):
+            qa_in_db = QA.parse_obj(row_qa)
+            if qa_in_db.incomplete is False:
+                if qa_in_db.correct == qa.correct:
+                    if qa.incorrect.issubset(qa_in_db.incorrect):
+                        return ("exist", qa_in_db.id)
+                    else:
+                        collection.update_one(
+                            {"_id": qa_in_db.id},
+                            {"incorrect": qa.incorrect.union(qa_in_db.incorrect)},
+                        )
+                        return ("update", qa_in_db.id)
+                else:
+                    id = collection.insert_one(qa.to_mongo()).inserted_id
+                    return ("new", id)
+            if qa_in_db.incomplete is True and qa.incomplete is False:
+                id = collection.insert_one(qa.to_mongo()).inserted_id
+                return ("new", id)
+            if qa_in_db.incomplete is True and qa.incomplete is True:
+                if (
+                    qa_in_db.correct == qa.correct
+                    and qa_in_db.incorrect == qa.incorrect
+                ):
+                    return ("exist", qa_in_db.id)
+                else:
+                    id = collection.insert_one(qa.to_mongo()).inserted_id
+                    return ("new", id)
+        else:
+            id = collection.insert_one(qa.to_mongo()).inserted_id
+            return ("new", id)
 
 
 # def is_exists(type: str, answer: list[str], question: str):

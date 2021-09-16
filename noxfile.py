@@ -62,3 +62,19 @@ def prety(session: nox.Session):
     session.run("black", ".", external=True)
     session.run("flake8", "arya_backend/", external=True)
     session.install(".")
+
+
+@nox.session(py=False)
+def parse(session: nox.Session):
+    load_dotenv()
+    session.install(".")
+    session.run(
+        "python",
+        "-m",
+        "parser",
+        env={  # type: ignore
+            "MONGO_DB_NAME": os.environ.get("MONGO_DB_NAME"),
+            "MONGO_PASSWORD": os.environ.get("MONGO_PASSWORD"),
+            "MONGO_USER": os.environ.get("MONGO_USER"),
+        },
+    )

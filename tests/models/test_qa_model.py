@@ -1,8 +1,7 @@
 import pytest
-from attr import has
-from pydantic import ValidationError
+from pydantic import ValidationError, parse_obj_as
 
-from arya_backend.models.qa import QA
+from arya_backend.models.qa import QA, ManyAnswer, OneAnswer
 
 
 @pytest.fixture
@@ -25,8 +24,8 @@ def qa_dict():
                 "question": "question",
                 "answers": ["1", "2"],
                 "extra_answers": [],
-                "correct": {"1"},
-                "incorrect": [{"2"}],
+                "correct": ("1"),
+                "incorrect": [("2")],
                 "type": QA.type_enum.many,
                 "incomplete": False,
             }
@@ -47,7 +46,7 @@ def qa_dict():
                 "question": "question",
                 "answers": ["1", "2"],
                 "extra_answers": ["a", "b"],
-                "correct": {"1": "a", "2": "b"},
+                "correct": (("1", "a"), ("2", "b")),
                 "incorrect": [],
                 "type": QA.type_enum.join,
                 "incomplete": False,
@@ -85,9 +84,9 @@ def test_norml_qa(type, qa_dict):
         ({"1"}, [["1"]]),
         ({"1"}, [{"1": "1"}]),
         # join
-        ({"1": "1"}, ["1"]),
-        ({"1": "1"}, [{"1"}]),
-        ({"1": "1"}, [["1"]]),
+        (("1", "1"), ["1"]),
+        (("1", "1"), [{"1"}]),
+        (("1", "1"), [["1"]]),
     ],
 )
 def test_consistency(correct, incorrect, qa_dict):
@@ -138,3 +137,8 @@ def test_incomplete_validation(type, incomplete, raised, has_incorrect, qa_dict)
             QA.parse_obj(qa_dict)
     else:
         QA.parse_obj(qa_dict)
+
+
+def test_dict(qa_dict):
+    qa = QA.parse_obj(qa_dict()).to_mongo()
+    assert isinstance(qa["incorrect"], list)

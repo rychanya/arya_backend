@@ -1,6 +1,7 @@
 from typing import Optional
 
 import pytest
+from pymongo import collation
 from pymongo.collection import Collection
 
 from arya_backend.db.QA import QACRUD
@@ -10,7 +11,7 @@ from arya_backend.models.qa import QA
 @pytest.fixture
 def iqa():
     return QA(
-        incomplete=0,
+        incomplete=False,
         type=QA.type_enum.one,
         question="question",
         answers=["1", "2", "3"],
@@ -27,6 +28,56 @@ def qa():
         answers=["1", "2", "3"],
         correct="1",
     )
+
+
+@pytest.mark.parametrize(
+    "db, qa, res",
+    [
+        (
+            None,
+            QA(
+                incomplete=False,
+                type=QA.type_enum.one,
+                question="question",
+                answers=["1", "2", "3"],
+                correct="1",
+            ),
+            "new",
+        ),
+        (
+            [
+                {
+                    "question": "question",
+                    "answers": ["1", "2", "3"],
+                    "type": QA.type_enum.one,
+                    "incomplete": False,
+                    "correct": "1",
+                    "incorrect": [],
+                }
+            ],
+            QA(
+                incomplete=False,
+                type=QA.type_enum.one,
+                question="question",
+                answers=["1", "2", "3"],
+                correct="1",
+            ),
+            "exist",
+        ),
+    ],
+)
+def test_get_or_create(get_qa_col: Collection, qa_crud: QACRUD, db, qa: QA, res):
+    if db:
+        get_qa_col.insert_many(db)
+    result = qa_crud.get_or_create(qa)
+    assert result[0] == res
+
+
+# def test_t(get_qa_col: Collection, qa_crud: QACRUD, iqa: QA, qa: QA):
+#     get_qa_col.insert_one(qa.dict(exclude_none=True))
+#     get_qa_col.insert_one(iqa.dict(exclude_none=True))
+#     print(qa_crud.get_or_create(qa))
+#     assert False
 
 
 # def test_add_iqa_if_it_not_exist(get_qa_col: Collection, qa_crud: QACRUD, iqa: QA):
